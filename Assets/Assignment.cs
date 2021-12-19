@@ -364,6 +364,90 @@ static public class AssignmentPart2
         sw.Close();
     }
 
+    static public void RefreshPartyNameList()
+    {
+
+    }
+
+    static private void LoadParty(int indexToLoad)
+    {
+        StreamReader sr = new StreamReader(Application.dataPath + Path.DirectorySeparatorChar + "Party.txt");
+
+        string line = "";
+        while ((line = sr.ReadLine()) != null)
+        {
+            Debug.Log(line);
+            string[] csv = line.Split(',');
+            
+            int signifier = int.Parse(csv[0]);
+
+            if (signifier == PartyCharacterSaveDataSignifier)
+            {
+                PartyCharacter pc = new PartyCharacter(int.Parse(csv[1]), int.Parse(csv[2]), int.Parse(csv[3]), int.Parse(csv[4]), int.Parse(csv[5]), int.Parse(csv[6]));
+                GameContent.partyCharacters.AddLast(pc);
+            }
+            else if (signifier == PartyCharacterEquipmentSaveDataSignifier)
+            {
+                GameContent.partyCharacters.Last.Value.equipment.AddLast(int.Parse(csv[1]));
+            }
+        }
+    }
+
+    static public void SendOnScreenPartyToServerForSharing(NetworkedClient networkClient)
+    {
+        LinkedList<string> data = new LinkedList<string>();
+
+        foreach(PartyCharacter pc in GameContent.partyCharacters)
+        {
+            data.AddLast(PartyCharacterSaveDataSignifier + "," + pc.classID + "," + pc.health
+            + "," + pc.mana
+            + "," + pc.strength
+            + "," + pc.agility
+            + "," + pc.wisdom);
+
+            foreach(int equip in pc.equipment)
+            {
+                data.AddLast(PartyCharacterEquipmentSaveDataSignifier + "," + equip);
+            }
+        }
+
+        networkClient.SendMessageToHost(ClientToServerSignifiers.PartyTransferDataStart + "");
+
+        foreach(string datum in data)
+        {
+            networkClient.SendMessageToHost(ClientToServerSignifiers.PartyTransferData + "," + datum);
+        }
+
+        networkClient.SendMessageToHost(ClientToServerSignifiers.PartyTransferDataEnd + "");
+    }
+    
+    static public void LoadPartyFromSharedFriend(LinkedList<string> data)
+    {
+        //StreamReader sr = new StreamReader(Application.dataPath + Path.DirectorySeparatorChar);
+        GameContent.partyCharacters.Clear();
+
+        foreach(string line in data)
+        {
+            Debug.Log(line);
+
+            string[] csv = line.Split(',');
+
+            int signifier = int.Parse(csv[0]);
+
+            if(signifier == PartyCharacterSaveDataSignifier)
+            {
+                PartyCharacter pc = new PartyCharacter(int.Parse(csv[2]), int.Parse(csv[3]), 
+                    int.Parse(csv[4]), int.Parse(csv[5]), int.Parse(csv[6]), int.Parse(csv[7]));
+                GameContent.partyCharacters.AddLast(pc);
+            }
+            else if (signifier == PartyCharacterEquipmentSaveDataSignifier)
+            {
+                GameContent.partyCharacters.Last.Value.equipment.AddLast(int.Parse(csv[1]));
+            }
+        }
+
+        GameContent.RefreshUI();
+    }
 }
 
 public class NameAndIndex
