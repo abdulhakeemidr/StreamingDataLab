@@ -116,7 +116,8 @@ static public class AssignmentPart1
 
             if(signifier == PartyCharacterSaveDataSignifier)
             {
-                PartyCharacter pc = new PartyCharacter(int.Parse(csv[1]), int.Parse(csv[2]), int.Parse(csv[3]), int.Parse(csv[4]), int.Parse(csv[5]), int.Parse(csv[6]));
+                PartyCharacter pc = new PartyCharacter(int.Parse(csv[2]), int.Parse(csv[3]), 
+                    int.Parse(csv[4]), int.Parse(csv[5]), int.Parse(csv[6]), int.Parse(csv[7]));
                 GameContent.partyCharacters.AddLast(pc);
             }
             else if (signifier == PartyCharacterEquipmentSaveDataSignifier)
